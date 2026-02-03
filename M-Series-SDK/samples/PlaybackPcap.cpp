@@ -23,9 +23,13 @@
 #include <unistd.h>
 #include <string.h>
 #include <sys/types.h>
-#include <sys/socket.h>
-#include <arpa/inet.h>
-#include <netinet/in.h>
+#ifndef _WIN32
+    #include <sys/socket.h>
+    #include <arpa/inet.h>
+    #include <netinet/in.h>
+#else
+    #include <winsock2.h>
+#endif
 #include <math.h>
 #include <thread>
 #include <mutex>

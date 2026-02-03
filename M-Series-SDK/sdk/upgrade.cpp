@@ -1,3 +1,4 @@
+#include <unistd.h>
 #include "upgrade.h"
 
 FirmwareFile *LoadFirmware(const char *path, FirmwareInfo &info)
@@ -343,7 +344,11 @@ int udpTalk(int fdUdp, const char *devIp, int devPort,
 {
     struct sockaddr_in sin1;
     socklen_t sin_size = sizeof(sin1);
+#ifndef _WIN32
     bzero(&sin1, sizeof(struct sockaddr_in));
+#else
+    memset( &sin1, 0, sizeof( struct sockaddr_in) );
+#endif 
     sin1.sin_family = AF_INET;
     sin1.sin_addr.s_addr = inet_addr(devIp);
     sin1.sin_port = htons(devPort);
@@ -398,7 +403,11 @@ int udpSend(int fdUdp, const char *devIp, int devPort,
 {
     struct sockaddr_in sin1;
     socklen_t sin_size = sizeof(sin1);
+#ifndef _WIN32
     bzero(&sin1, sizeof(struct sockaddr_in));
+#else
+    memset( &sin1, 0, sizeof( struct sockaddr_in) );
+#endif
     sin1.sin_family = AF_INET;
     sin1.sin_addr.s_addr = inet_addr(devIp);
     sin1.sin_port = htons(devPort);
@@ -577,7 +586,7 @@ int UpgradeMCU(RangeUpInfo *This, FirmwareFile *m_firmware)
         return -7;
     }
     printf("upgrade ok!\n");
-    sleep(2);
+    usleep(2000000);
     CommunicationAPI::send_cmd_udp(This->m_sock, This->m_ip, This->m_port, 0x0043, rand(), 6, "LRESTH");
     return 0;
 }

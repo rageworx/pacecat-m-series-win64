@@ -3,20 +3,25 @@
 #define TRY_RECV_COUNT 500
 
 #include <stdarg.h>
-#include <sys/ipc.h>
-#include <sys/stat.h>
-#include <sys/msg.h>
-#include <termios.h>
-#include<stdlib.h>
-#include<string.h>
-#include<iostream>
-#include<stdio.h>
+#ifndef _WIN32
+    #include <sys/ipc.h>
+    #include <sys/stat.h>
+    #include <sys/msg.h>
+    #include <termios.h>
+#endif /// of _WIN32
+
+#include <cstdlib>
+#include <string.h>
+#include <iostream>
+#include <stdio.h>
 #include <time.h>
-#include <netdb.h>
+
+#ifndef _WIN32
+    #include <netdb.h>
+#endif /// if _WIN32
 
 #include"global.h"
 #pragma pack (push,1)
-
 
 struct FirmwareFile
 {

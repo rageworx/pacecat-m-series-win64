@@ -5,6 +5,9 @@
  * 
  * Date:    2026-01-21
  * 
+ * Rewritten for support MinGW-W64
+ *    - Raphael.Kim , 2026-02-02
+ *
  * Description: 
  * This class is core module
  * include  lidar  pointcloud/imu recvform thread,cmd talk thread,playback thread,heatbeat thread
@@ -15,7 +18,8 @@
  * 1.supports multiple lidars, but pay attention to bandwidth performance
  * 2.use C++11 or later ; readerwriterqueue  3rdparty
  ****************************************************************/
-
+#ifndef __PACECATLIDARSDK_H__
+#define __PACECATLIDARSDK_H__
 #pragma once
 
 #include<vector>
@@ -389,10 +393,4 @@ private:
     bool m_heartthread_is_block{false};
 };
 
-
-
-
-
-
-
-
+#endif /// of __PACECATLIDARSDK_H__

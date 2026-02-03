@@ -9,12 +9,15 @@
 #include<string>
 #include"protocol.h"
 
-
 #define getbit(x,y)   ((x) >> (y)&1)
-#define setbit(x,y) x|=(1<<y)         //将X的第Y位置1
-#define clrbit(x,y) x&=~(1<<y)            //将X的第Y位清0
+#define setbit(x,y) x|=(1<<y)         /// 将X的第Y位置1
+#define clrbit(x,y) x&=~(1<<y)        /// 将X的第Y位清0
 #define M_PI 3.14159265358979323846
 
+#ifdef _WIN32
+    typedef uint32_t    in_addr_t;
+    typedef uint16_t    in_port_y;
+#endif
 
 //自定义结构体
 struct CmdRecord

@@ -1,4 +1,3 @@
-
 #include"playback.h"
 #include<errno.h>
 
@@ -51,13 +50,15 @@ void destroy_context(ParseContext* ctx) {
 }
 // 获取系统页大小
 long get_page_size() {
-     long page_size = 0;
-    if (page_size == 0) {
+    long page_size = 0;
+    if (page_size == 0) { /// ???? what for .... ?
+#ifndef _WIN32
         page_size = sysconf(_SC_PAGESIZE);
         if (page_size == -1) {
             perror("sysconf failed");
             return -1;
         }
+#endif
     }
     return page_size;
 }

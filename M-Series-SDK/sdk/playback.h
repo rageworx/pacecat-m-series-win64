@@ -6,11 +6,21 @@
 #include <string.h>
 #include <fcntl.h>
 #include <unistd.h>
-#include <sys/mman.h>
-#include <sys/stat.h>
-#include <arpa/inet.h>
-#include <netinet/ip.h>
-#include <netinet/udp.h>
+
+#ifndef _WIN32
+    #include <sys/mman.h>
+    #include <sys/stat.h>
+    #include <arpa/inet.h>
+    #include <netinet/ip.h>
+    #include <netinet/udp.h>
+#else
+    // minGW-W64 users are need mman 
+    // see : https://packages.msys2.org/base/mingw-w64-mman-win32
+    #include <winsock2.h>
+    #include <sys/stat.h>
+    #include <sys/mman.h>
+#endif
+
 #include <time.h>
 #include <pthread.h>
 #include <signal.h>

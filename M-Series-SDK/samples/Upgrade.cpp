@@ -15,6 +15,7 @@
  * 1.The callback function must not perform time-consuming operations, otherwise packet loss may occur
  * 2.use C++11 or later ; readerwriterqueue  3rdparty
  ****************************************************************/
+#include <unistd.h>
 #include "../sdk/pacecatlidarsdk.h"
 #include"../sdk/global.h"
 
@@ -44,7 +45,7 @@ int main()
 	PaceCatLidarSDK::getInstance()->SetLogDataCallback(devID, LogDataCallback, nullptr);
 	bool ret = PaceCatLidarSDK::getInstance()->SetLidarUpgrade(devID, upgrade_file_path);
 	printf("lidar upgrade %d\n", ret);
-	sleep(20);
+	usleep(20000000);
 	bool ret2 = PaceCatLidarSDK::getInstance()->SetLidarUpgrade(devID, upgrade_file_path2);
 	printf("lidar upgrade2 %d\n", ret2);
 

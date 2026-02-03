@@ -1,11 +1,17 @@
 ﻿#include "global.h"
 #include <unistd.h>
-#include <sys/socket.h>
-#include <sys/ioctl.h>
-#include <net/if.h>
-#include <arpa/inet.h>
+
+#ifndef _WIN32
+    #include <sys/socket.h>
+    #include <sys/ioctl.h>
+    #include <net/if.h>
+    #include <arpa/inet.h>
+#else
+    #include <winsock2.h>
+#endif
 #ifdef _WIN32
-#pragma warning(disable : 4996)
+    // for M$VC ?
+    #pragma warning(disable : 4996)
 #endif
 
 bool mac_check(const char *mac)
@@ -609,7 +615,7 @@ in_addr_t SystemAPI::get_interface_ip(const char *ifname)
 {
 	if (!ifname || strlen(ifname) == 0)
 	{
-		return INADDR_NONE;
+		return (in_addr_t)INADDR_NONE;
 	}
 
 #ifdef _WIN32
@@ -620,7 +626,7 @@ in_addr_t SystemAPI::get_interface_ip(const char *ifname)
 	if (fd < 0)
 	{
 		perror("socket");
-		return INADDR_NONE;
+		return (in_addr_t)INADDR_NONE;
 	}
 
 	struct ifreq ifr;
@@ -631,7 +637,7 @@ in_addr_t SystemAPI::get_interface_ip(const char *ifname)
 	{
 		perror("ioctl(SIOCGIFADDR)");
 		close(fd);
-		return INADDR_NONE;
+		return (in_addr_t)INADDR_NONE;
 	}
 
 	close(fd);

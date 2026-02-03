@@ -1,5 +1,5 @@
-﻿#ifndef PROTOCOL_H
-#define PROTOCOL_H
+﻿#ifndef __PROTOCOL_H__
+#define __PROTOCOL_H__
 
 #include "define.h"
 
@@ -455,4 +455,4 @@ typedef void (*LidarImuDataCallback)(uint32_t handle, const uint8_t dev_type, co
 typedef void (*LidarLogDataCallback)(uint32_t handle, const uint8_t dev_type, const char *data, int len);
 typedef void (*LidarAlarmCallback)(uint32_t handle, const uint8_t dev_type, const char *data, int len);
 
-#endif
+#endif /// of __PROTOCOL_H__
