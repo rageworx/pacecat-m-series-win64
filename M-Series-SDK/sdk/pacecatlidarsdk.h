@@ -29,27 +29,29 @@
 #include<thread>
 #include<mutex>
 #include<string>
+
 #ifdef _WIN32
-#pragma warning(disable : 4996)
-#pragma warning(disable : 4244)
-#include <winsock2.h>
-#include <iphlpapi.h>
-// -- M$VC not availed -- #pragma comment(lib, "iphlpapi.lib")
-// -- M$VC not availed -- #pragma comment(lib, "ws2_32.lib")
-typedef uint32_t in_addr_t;
+    #pragma warning(disable : 4996)
+    #pragma warning(disable : 4244)
+    #include <winsock2.h>
+    #include <iphlpapi.h>
+    typedef uint32_t in_addr_t;
 #else
-#include <unistd.h>
-#include <sys/socket.h>
-#include <sys/ioctl.h>
-#include <net/if.h>
-#include <arpa/inet.h>
+    #include <unistd.h>
+    #include <sys/socket.h>
+    #include <sys/ioctl.h>
+    #include <net/if.h>
+    #include <arpa/inet.h>
 #endif
+
 #include "../3rdparty/readerwriterqueue/readerwriterqueue.h"
 #include"protocol.h"
 #include"global.h"
 #include"event.h"
 
 #define M_SERIES_SDKVERSION "V1.7.1_2026012101"
+#define M_SERIES_SDKEXTTAG  "MinGW-W64"
+
 typedef struct
 {
     std::string uuid;
@@ -84,6 +86,7 @@ typedef struct
     uint16_t voltage;       /// 0.001
     bool isonline;
 }ConnectInfo;
+
 typedef struct
 {
     std::vector<ConnectInfo>lidars;
@@ -102,12 +105,14 @@ struct CmdTask
     uint16_t rand;              /// 随机码
     uint8_t is_inside;          /// 是否是内置的命令
 };
+
 struct CmdTaskList
 {
     uint8_t max_waittime;       /// 最大等待时间 单位:秒
     uint8_t max_try_count;      /// 最大重试次数
     std::queue<CmdTask>cmdtask; /// 任务列表
 };
+
 struct StatisticsInfo
 {
     uint32_t zero_point_num;
@@ -116,13 +121,13 @@ struct StatisticsInfo
     uint32_t filter_num;
 };
 
-
 enum LidarState
 {
     OFFLINE = 0,
     ONLINE,
     QUIT
 };
+
 enum LidarAction
 {
     NONE=0,
@@ -147,6 +152,7 @@ enum LidarAction
     GET_ADCINFO,
     CMD_TALK
 };
+
 enum LidarMsg
 {
     MSG_DEBUG,
@@ -155,6 +161,7 @@ enum LidarMsg
     MSG_CRITICAL
 
 };
+
 enum CriticalMSG
 {
     ERR_TEMPERATURE_HIGH=0,
@@ -212,6 +219,7 @@ struct RunConfig
     std::string log_path;
     DeBugInfo debuginfo;
 };
+
 struct UserHeartInfo
 {
     float motor_rpm;                /// 0.1

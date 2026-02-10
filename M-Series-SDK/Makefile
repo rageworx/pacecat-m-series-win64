@@ -11,6 +11,10 @@ INC_DIR = sdk
 OBJ_DIR = obj
 BIN_DIR = bin
 EPT_DIR = $(BIN_DIR)/include
+INST_DIR = /usr/local
+
+SDK_INC = pacecatlidarsdk.h
+LIB_INCS = $(SRC_DIR)/$(SDK_INC)
 
 SAMPLE_DIR = samples
 3RDPARTY_DIR = 3rdparty/readerwriterqueue
@@ -82,3 +86,21 @@ Upgrade: $(SAMPLE_DIR)/Upgrade.cpp $(LIBOUT)
 	@echo "Building sample ($@) ..."
 	@$(CXX) $(CXXFLAGS) $< -L$(BIN_DIR) -l$(LIB_NM) $(LDFLAGS) -o $(BIN_DIR)/$@
 
+install:
+	@if [ ! -e $(LIBOUT) ]; then \
+	    echo "Error: library ${LIBOUT} seems to not be built."; \
+		exit 1; \
+	 fi
+	@echo -n "Installing library... "
+	@cp -rf $(LIBOUT) $(INST_DIR)/lib
+	@cp -rf $(LIB_INCS) $(INST_DIR)/include
+	@echo "Done."
+
+uninstall:
+	@if [ -e $(INST_DIR)/include/$(SDK_INC) ]; then \
+		rm -rf $(INST_DIR)/include/$(SDK_INC); \
+	 fi
+	@if [ -e $(INST_DIR)/lib/$(TARGET_PKG) ]; then \
+		rm -rf $(INST_DIR)/lib/$(TARGET_PKG); \
+	 fi
+	@echo "Uninstall: done"
