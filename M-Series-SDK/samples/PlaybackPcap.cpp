@@ -112,8 +112,19 @@ void LogDataCallback(uint32_t handle, const uint8_t dev_type, const char *data, 
 
 int main(int argc, char **argv)
 {
+  std::string log_path;
+  if ( argc > 1 )
+  {
+    if ( access( argv[1], 0 ) == 0 )
+      log_path = argv[1];
+  }
 
-  std::string log_path = "/home/pacecat/wangzn/logdata/111.pcap";
+  if ( log_path.size() == 0 )
+  {
+    printf( "need pcap file as a parameter.\n" );
+    return 0;
+  }
+
   int frame_packet_num = 150; // 一帧的包数
   int devID = PaceCatLidarSDK::getInstance()->AddLidarForPlayback(log_path, frame_packet_num);
   PaceCatLidarSDK::getInstance()->SetPointCloudCallback(devID, PointCloudCallback, nullptr);

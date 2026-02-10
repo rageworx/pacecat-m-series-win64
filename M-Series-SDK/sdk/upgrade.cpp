@@ -1,4 +1,5 @@
 #include <unistd.h>
+#include <cstdint>
 #include "upgrade.h"
 
 FirmwareFile *LoadFirmware(const char *path, FirmwareInfo &info)
@@ -8,7 +9,7 @@ FirmwareFile *LoadFirmware(const char *path, FirmwareInfo &info)
     // ###MCU VERSION:
     // LDS-M300-E_MOTOR_V401-250108-A_20250109-151321
     FILE *pfile = nullptr;
-    unsigned long length = 0; // 升级文件长度
+    std::size_t length = 0; /// 升级文件长度
     pfile = fopen(path, "rb");
     if (pfile == NULL)
     {
@@ -19,25 +20,26 @@ FirmwareFile *LoadFirmware(const char *path, FirmwareInfo &info)
     {
         fseek(pfile, 0, SEEK_END);
         length = ftell(pfile);
-        fseek(pfile, 0, SEEK_SET);
+        rewind(pfile);
     }
 
-    char *file_data = (char *)malloc(length);
-    if (file_data == NULL)
+    char *file_data = new char[length];
+    if ( file_data == nullptr )
     {
-        perror("内存分配失败");
+        perror("Memory allocation failed");
         fclose(pfile);
         return NULL;
     }
+
     if (fread(file_data, 1, length, pfile) != (size_t)length)
     {
-        perror("读取文件失败");
-        free(file_data);
+        perror("Failed to read file");
+        delete[] file_data;
         fclose(pfile);
         return NULL;
     }
 
-    for (unsigned int i = 0; i < length - 32; i++)
+    for (std::size_t i = 0; i < length - 32; i++)
     {
         if (file_data[i] == '#')
         {
@@ -55,31 +57,33 @@ FirmwareFile *LoadFirmware(const char *path, FirmwareInfo &info)
             }
         }
     }
-    // old version
+
+    // old version ?
     if (info.model.empty())
     {
-
-        std::string pathstr = path;
+        std::string pathstr   = path;
         std::size_t idx_model = pathstr.find("_");
         std::size_t idx_motor = pathstr.find("MOTOR");
-        std::size_t idx_mcu = pathstr.find("MCU");
-        // std::size_t idx_end = pathstr.find('.');
+        std::size_t idx_mcu   = pathstr.find("MCU");
         std::size_t idx_other = pathstr.find_last_of('_');
         bool islegal = false;
+
         if (idx_model != std::string::npos)
         {
             info.model = pathstr.substr(0, idx_model);
         }
+
         if (idx_motor != std::string::npos)
         {
             info.motor = pathstr.substr(idx_motor + 6, idx_other - idx_motor - 6);
-            for (uint16_t j = 0; j < info.motor.size(); j++)
+            for (std::size_t j = 0; j < info.motor.size(); j++)
             {
                 if (info.motor.c_str()[j] == '-')
                     info.motor[j] = 0x20;
             }
             islegal = true;
         }
+
         if (idx_mcu != std::string::npos)
         {
             info.mcu = pathstr.substr(idx_mcu + 4, idx_other - idx_mcu - 4);
@@ -90,30 +94,36 @@ FirmwareFile *LoadFirmware(const char *path, FirmwareInfo &info)
             }
             islegal = true;
         }
+
         if (!islegal)
         {
             printf("upgrade filename is not ok\n");
-            free(file_data);
+            delete[] file_data;
             fclose(pfile);
-            return NULL;
+            return nullptr;
         }
     }
 
     fseek(pfile, 0, SEEK_SET);
-    FirmwareFile *fp = NULL;
+    FirmwareFile *fp = nullptr;
     fp = (FirmwareFile *)file_data;
     fread(fp, length, 1, pfile);
     fclose(pfile);
-    if ((unsigned int)fp->code == 0xb18e03ea && fp->len % 512 == 0 && fp->len + sizeof(FirmwareFile) == length)
+
+    if ( (uint32_t)fp->code == 0xb18e03ea &&
+         fp->len % 512 == 0 && fp->len + sizeof(FirmwareFile) == length )
     {
-        if (fp->crc == BaseAPI::stm32crc((uint32_t *)(fp->buffer), fp->len / 4))
+        uint32_t crc32chk = \
+            BaseAPI::stm32crc( (uint32_t *)(fp->buffer), fp->len / 4 );
+        if ( fp->crc == crc32chk )
         {
             return fp;
         }
     }
-    free(file_data);
-    return NULL;
+    delete[] file_data;
+    return nullptr;
 }
+
 bool getLidarVersion(char *buf, int len, FirmwareInfo &info)
 {
     int startidx = 0;
@@ -127,12 +137,14 @@ bool getLidarVersion(char *buf, int len, FirmwareInfo &info)
             startidx = i + 4;
             devel = 1;
         }
-        else if ((len >= i + 14) && strncmp(&buf[i], "MOTOR VERSION:", 14) == 0)
+        else 
+        if ((len >= i + 14) && strncmp(&buf[i], "MOTOR VERSION:", 14) == 0)
         {
             startidx = i + 14;
             devel = 2;
         }
-        else if ((len >= i + 2) && buf[i] == 0x0d && buf[i + 1] == 0x0a)
+        else 
+        if ((len >= i + 2) && buf[i] == 0x0d && buf[i + 1] == 0x0a)
         {
             endidx = i;
             if (devel == 1)
@@ -145,6 +157,7 @@ bool getLidarVersion(char *buf, int len, FirmwareInfo &info)
             }
         }
     }
+
     if (devel == 2)
         return true;
     else
@@ -162,6 +175,7 @@ bool SearchPattern(const CmdBody *cmd, const char *want)
     }
     return false;
 }
+
 int SendRanger(int sock, const char *ip, int port, int len, const void *buf, int sn)
 {
     sockaddr_in addr;
@@ -169,7 +183,7 @@ int SendRanger(int sock, const char *ip, int port, int len, const void *buf, int
     addr.sin_addr.s_addr = inet_addr(ip);
     addr.sin_port = htons(port);
 
-    char buffer[1024];
+    char buffer[1024] = {0};
     CmdHeader *hdr = (CmdHeader *)buffer;
     hdr->sign = PACK_PREAMLE;
     hdr->cmd = RG_PACK;
@@ -180,8 +194,8 @@ int SendRanger(int sock, const char *ip, int port, int len, const void *buf, int
     memcpy(buffer + sizeof(CmdHeader), buf, hdr->len);
 
     // int n = sizeof(CmdHeader);
-    unsigned int *pcrc = (unsigned int *)(buffer + sizeof(CmdHeader) + hdr->len);
-    pcrc[0] = BaseAPI::stm32crc((unsigned int *)(buffer + 0), hdr->len / 4 + 2);
+    uint32_t *pcrc = (uint32_t *)(buffer + sizeof(CmdHeader) + hdr->len);
+    pcrc[0] = BaseAPI::stm32crc((uint32_t *)(buffer + 0), hdr->len / 4 + 2);
 
     return sendto(sock, buffer, hdr->len + 12, 0,
                   (struct sockaddr *)&addr, sizeof(struct sockaddr));
@@ -230,8 +244,8 @@ bool WaitRangerMsg(int sock, int mxl, CmdBody *msg, int timeout)
                 msg->sign == PACK_PREAMLE &&
                 msg->cmd == (uint16_t)~RG_PACK)
             {
-                unsigned int *crc = (unsigned int *)(buf + sizeof(CmdHeader) + msg->len);
-                if (*crc == BaseAPI::stm32crc((unsigned int *)buf, msg->len / 4 + 2))
+                uint32_t *crc = (uint32_t *)(buf + sizeof(CmdHeader) + msg->len);
+                if (*crc == BaseAPI::stm32crc((uint32_t *)buf, msg->len / 4 + 2))
                 {
                     msg->txt[msg->len] = 0;
                     return true;
@@ -306,8 +320,8 @@ int packUdp(int len, void *payload, void *buf)
     int len4 = ((len + 3) >> 2) * 4;
     memcpy((char *)buf + UDP_HEADER, (char *)payload, len);
 
-    unsigned int *pcrc = (unsigned int *)((uint8_t *)buf + UDP_HEADER + len4);
-    *pcrc = BaseAPI::stm32crc((unsigned int *)buf, len4 / 4 + 2);
+    uint32_t *pcrc = (uint32_t *)((uint8_t *)buf + UDP_HEADER + len4);
+    *pcrc = BaseAPI::stm32crc((uint32_t *)buf, len4 / 4 + 2);
 
     return len4 + 12;
 }
@@ -326,8 +340,8 @@ int unpackUdp(int len, uint8_t *buf, struct CmdHeader *hdr, uint8_t **payload)
         return -2;
     }
 
-    unsigned int *crc = (unsigned int *)(buf + UDP_HEADER + hdr->len);
-    if (*crc != BaseAPI::stm32crc((unsigned int *)buf, hdr->len / 4 + 2))
+    uint32_t *crc = (uint32_t *)(buf + UDP_HEADER + hdr->len);
+    if (*crc != BaseAPI::stm32crc((uint32_t *)buf, hdr->len / 4 + 2))
     {
         return -3;
     }
@@ -590,7 +604,7 @@ int UpgradeMCU(RangeUpInfo *This, FirmwareFile *m_firmware)
     CommunicationAPI::send_cmd_udp(This->m_sock, This->m_ip, This->m_port, 0x0043, rand(), 6, "LRESTH");
     return 0;
 }
-void SendUpgradePack(unsigned int udp, const FirmwarePart *fp, char *ip, int port, int SN, ResendPack *resndBuf)
+void SendUpgradePack(uint32_t udp, const FirmwarePart *fp, char *ip, int port, int SN, ResendPack *resndBuf)
 {
     CommunicationAPI::send_cmd_udp(udp, ip, port, F_PACK, SN, sizeof(FirmwarePart), (char *)fp);
     if (resndBuf)

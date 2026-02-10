@@ -40,40 +40,53 @@ int init_context(ParseContext* ctx, const char* filename) {
 // ======================
 // 清理资源
 // ======================
-void destroy_context(ParseContext* ctx) {
-    if (ctx->mmap_ptr) {
+void destroy_context(ParseContext* ctx) 
+{
+    if (ctx->mmap_ptr) 
+    {
         munmap(ctx->mmap_ptr, ctx->mmap_size);
     }
-    if (ctx->fd != -1) {
+
+    if (ctx->fd != -1) 
+    {
         close(ctx->fd);
     }
 }
+
 // 获取系统页大小
-long get_page_size() {
+long get_page_size() 
+{
     long page_size = 0;
-    if (page_size == 0) { /// ???? what for .... ?
+    if (page_size == 0) 
+    { /// ???? what for .... ?
 #ifndef _WIN32
         page_size = sysconf(_SC_PAGESIZE);
         if (page_size == -1) {
             perror("sysconf failed");
             return -1;
         }
+#else
+        page_size = 512 * 1024;
 #endif
     }
     return page_size;
 }
+
 // ======================
 // 映射下一个文件块
 // ======================
-int map_next_chunk(ParseContext* ctx) {
+int map_next_chunk(ParseContext* ctx) 
+{
     long page_size = get_page_size();
-    if (page_size <= 0) {
+    if (page_size <= 0) 
+    {
         return -1;
     }
     
     // 计算本次映射大小
     size_t remaining = ctx->file_size - ctx->processed_size;
-    if (remaining == 0) {
+    if (remaining == 0) 
+    {
         return 0; // 文件已处理完
     }
     
@@ -83,41 +96,50 @@ int map_next_chunk(ParseContext* ctx) {
     
     // 计算映射大小（包含对齐调整）
     size_t map_size = remaining + offset_adjustment;
-    if (map_size > MEMORY_MAP_SIZE) {
+    if (map_size > MEMORY_MAP_SIZE) 
+    {
         map_size = MEMORY_MAP_SIZE;
     }
     
     // 确保映射大小是页大小的倍数
     map_size = (map_size / page_size) * page_size;
-    if (map_size == 0) {
+    if (map_size == 0) 
+    {
         // 当剩余数据小于页大小时，映射最小大小
         map_size = page_size;
     }
     
     // 检查映射是否超出文件范围
-    if (aligned_offset + map_size > ctx->file_size) {
+    if (aligned_offset + map_size > ctx->file_size) 
+    {
         map_size = ctx->file_size - aligned_offset;
     }
     
     // 取消之前的映射
-    if (ctx->mmap_ptr) {
+    if (ctx->mmap_ptr) 
+    {
         munmap(ctx->mmap_ptr, ctx->mmap_size);
     }
     
     // 创建新映射
     ctx->mmap_ptr = mmap(NULL, map_size, PROT_READ, MAP_PRIVATE, ctx->fd, aligned_offset);
-    if (ctx->mmap_ptr == MAP_FAILED) {
+    if (ctx->mmap_ptr == MAP_FAILED) 
+    {
         // 处理小文件映射的特殊情况
-        if (map_size < (size_t)page_size) {
+        if (map_size < (size_t)page_size) 
+        {
             // 尝试直接映射剩余部分
             map_size = remaining;
             ctx->mmap_ptr = mmap(NULL, map_size, PROT_READ, MAP_PRIVATE, ctx->fd, aligned_offset);
-            if (ctx->mmap_ptr == MAP_FAILED) {
+            if (ctx->mmap_ptr == MAP_FAILED) 
+            {
                 fprintf(stderr, "mmap failed for small chunk: %s (offset: %zu, size: %zu)\n", 
                         strerror(errno), aligned_offset, map_size);
                 return -1;
             }
-        } else {
+        } 
+        else 
+        {
             fprintf(stderr, "mmap failed: %s (offset: %zu, size: %zu)\n", 
                     strerror(errno), aligned_offset, map_size);
             return -1;
@@ -141,7 +163,8 @@ int parse_chunk(ParseContext* ctx)
     
     // 如果是文件开头，跳过PCAP全局头
     if (ctx->processed_size == 0) {
-        if (remaining < sizeof(pcap_file_header_t)) {
+        if (remaining < sizeof(pcap_file_header_t)) 
+        {
             fprintf(stderr, "Invalid PCAP file header\n");
             return -1;
         }
@@ -151,7 +174,8 @@ int parse_chunk(ParseContext* ctx)
         remaining -= sizeof(pcap_file_header_t);
     }
     
-    while (remaining >= sizeof(pcap_packet_header_t)) {
+    while (remaining >= sizeof(pcap_packet_header_t)) 
+    {
         // 读取PCAP包头部
         pcap_packet_header_t* pcap_hdr = (pcap_packet_header_t*)(data + ctx->current_offset);
         uint32_t packet_len = pcap_hdr->incl_len;
@@ -172,7 +196,8 @@ int parse_chunk(ParseContext* ctx)
         const uint8_t* packet_data = data + ctx->current_offset;
         
         // 跳过以太网头部 (14字节)
-        if (packet_len < 14) {
+        if (packet_len < 14) 
+        {
             ctx->current_offset += packet_len;
             remaining -= packet_len;
             continue;
@@ -180,7 +205,8 @@ int parse_chunk(ParseContext* ctx)
         
         // 检查以太网类型 (0x0800 = IPv4)
         uint16_t eth_type = ntohs(*(uint16_t*)(packet_data + 12));
-        if (eth_type != 0x0800) {
+        if (eth_type != 0x0800) 
+        {
             // 非IPv4包，跳过
             ctx->current_offset += packet_len;
             remaining -= packet_len;
@@ -191,14 +217,16 @@ int parse_chunk(ParseContext* ctx)
         const uint8_t* ip_header = packet_data + 14;
         size_t ip_header_len = (ip_header[0] & 0x0F) * 4; // IHL字段
         
-        if (packet_len < 14 + ip_header_len) {
+        if (packet_len < 14 + ip_header_len) 
+        {
             ctx->current_offset += packet_len;
             remaining -= packet_len;
             continue;
         }
         
         // 检查协议类型 (17 = UDP)
-        if (ip_header[9] != 17) {
+        if (ip_header[9] != 17) 
+        {
             // 非UDP包，跳过
             ctx->current_offset += packet_len;
             remaining -= packet_len;
@@ -215,7 +243,8 @@ int parse_chunk(ParseContext* ctx)
         
         // 更新统计
         // 解析UDP负载
-        if (payload_len >= 4) {
+        if (payload_len >= 4) 
+        {
             if(payload_len==1316)
                 ctx->pointcloud_num++;
             if(payload_len==33)
