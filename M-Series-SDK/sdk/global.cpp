@@ -1,4 +1,4 @@
-﻿#include "global.h"
+﻿#include <pacecatglobal.h>
 #include <unistd.h>
 
 #ifndef _WIN32

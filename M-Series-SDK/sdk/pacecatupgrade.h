@@ -20,7 +20,7 @@
     #include <netdb.h>
 #endif /// if _WIN32
 
-#include"global.h"
+#include "pacecatglobal.h"
 #pragma pack (push,1)
 
 struct FirmwareFile

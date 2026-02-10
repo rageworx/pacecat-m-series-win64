@@ -2,7 +2,7 @@
 #define __DATA_H__
 
 #include <stdint.h>
-#include<stdio.h>
+#include <stdio.h>
 #include <string.h>
 
 #ifndef UNUSED
@@ -15,15 +15,10 @@
 #endif /// of NOMINMAX
 
 #include <io.h>			//for access
-#include<ws2tcpip.h>
-#include<winsock.h>
-#include<Windows.h>
+#include <ws2tcpip.h>
+#include <winsock.h>
+#include <Windows.h>
 #include <iphlpapi.h>
-
-// it's for M$VC ...
-#pragma comment(lib, "iphlpapi.lib")
-#pragma comment(lib, "Advapi32.lib")
-#pragma comment(lib,"ws2_32.lib")
 
 #elif __unix__
 #include <sys/time.h>

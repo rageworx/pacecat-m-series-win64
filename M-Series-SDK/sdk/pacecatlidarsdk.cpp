@@ -5,10 +5,9 @@
 #include <ctime>
 #include <sstream>
 
-#include "global.h"
 #include "pacecatlidarsdk.h"
-#include "playback.h"
-#include "upgrade.h"
+#include "pacecatplayback.h"
+#include "pacecatupgrade.h"
 
 using namespace moodycamel;
 

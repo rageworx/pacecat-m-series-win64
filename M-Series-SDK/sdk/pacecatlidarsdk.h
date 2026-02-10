@@ -44,10 +44,10 @@
     #include <arpa/inet.h>
 #endif
 
-#include "../3rdparty/readerwriterqueue/readerwriterqueue.h"
-#include"protocol.h"
-#include"global.h"
-#include"event.h"
+#include <readerwriterqueue.h>
+#include <pacecatprotocol.h>
+#include <pacecatglobal.h>
+#include <pacecatevent.h>
 
 #define M_SERIES_SDKVERSION "V1.7.1_2026012101"
 #define M_SERIES_SDKEXTTAG  "MinGW-W64"

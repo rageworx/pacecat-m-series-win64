@@ -1,6 +1,6 @@
 #include <unistd.h>
 #include <cstdint>
-#include "upgrade.h"
+#include "pacecatupgrade.h"
 
 FirmwareFile *LoadFirmware(const char *path, FirmwareInfo &info)
 {
