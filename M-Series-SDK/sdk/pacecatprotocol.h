@@ -1,7 +1,7 @@
 ﻿#ifndef __PROTOCOL_H__
 #define __PROTOCOL_H__
 
-#include "define.h"
+#include <pacecatdefine.h>
 
 #define TRANS_BLOCK 0x200
 #define PACK_PREAMLE 0X484C
