@@ -167,7 +167,7 @@ bool BaseAPI::mask_check(const char *mask)
 {
     if (BaseAPI::judgepcIPAddrIsValid(mask) != false)
     {
-        unsigned int b = 0, i, n[4];
+        uint32_t b = 0, i, n[4];
         sscanf(mask, "%u.%u.%u.%u", &n[3], &n[2], &n[1], &n[0]);
 
         if (strcmp(mask, "0.0.0.0") == 0) //"0.0.0.0" 是合法子网掩码，但不可设置，不可用。
@@ -307,9 +307,9 @@ bool BaseAPI::checkAndMerge(int type, char *ip, char *mask, char *gateway, int p
                 return false;
         }
 
-        unsigned int str1 = 0;
-        unsigned int str2 = 0;
-        unsigned int str3 = 0;
+        uint32_t str1 = 0;
+        uint32_t str2 = 0;
+        uint32_t str3 = 0;
 
         // 字符串转整形
         // sscanf(ip, "%d.%d.%d.%d", &nTmpIP[0], &nTmpIP[1], &nTmpIP[2], &nTmpIP[3]);
@@ -349,10 +349,12 @@ int SystemAPI::open_socket_port(int port, bool isRepeat)
     WSAStartup(MAKEWORD(2, 2), &wsda);
 #endif // _WIN32
     int fd_udp = static_cast<int>(socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP));
+    
     if (fd_udp <= 0)
     {
         return -1;
     }
+    
     if (isRepeat)
     {
         int opt = 1;
@@ -408,7 +410,10 @@ int SystemAPI::closefd(int __fd, bool isSocket)
 {
 #ifdef _WIN32
     if (!isSocket)
-        CloseHandle((HANDLE)__fd);
+    {
+        // HANDLE ? 
+        close( __fd );
+    }
     else
         closesocket(__fd);
     return 0;
@@ -428,17 +433,17 @@ int SystemAPI::getLastError()
 #endif
 }
 
-unsigned int BaseAPI::stm32crc(unsigned int *ptr, unsigned int len)
+uint32_t BaseAPI::stm32crc(uint32_t *ptr, uint32_t len)
 {
-    unsigned int xbit, data;
-    unsigned int crc32 = 0xFFFFFFFF;
-    const unsigned int polynomial = 0x04c11db7;
+    uint32_t xbit, data;
+    uint32_t crc32 = 0xFFFFFFFF;
+    const uint32_t polynomial = 0x04c11db7;
 
-    for (unsigned int i = 0; i < len; i++)
+    for (uint32_t i = 0; i < len; i++)
     {
         xbit = 1 << 31;
         data = ptr[i];
-        for (unsigned int bits = 0; bits < 32; bits++)
+        for (uint32_t bits = 0; bits < 32; bits++)
         {
             if (crc32 & 0x80000000)
             {
@@ -522,9 +527,9 @@ void CommunicationAPI::send_cmd_udp(int fd_udp, const char *dev_ip, int dev_port
     hdr->len = len;
 
     memcpy(buffer + sizeof(CmdHeader), snd_buf, len);
-    unsigned int *pcrc = (unsigned int *)(buffer + sizeof(CmdHeader) + len);
+    uint32_t *pcrc = (uint32_t *)(buffer + sizeof(CmdHeader) + len);
 
-    pcrc[0] = BaseAPI::stm32crc((unsigned int *)(buffer + 0), len / 4 + 2);
+    pcrc[0] = BaseAPI::stm32crc((uint32_t *)(buffer + 0), len / 4 + 2);
 
     sockaddr_in to;
     to.sin_family = AF_INET;
@@ -666,7 +671,7 @@ double dx = pointB.x - pointA.x;
 bool AlgorithmAPI::checkWindowValid2(std::vector<LidarCloudPointData> &scan, size_t idx, size_t window, double max_distance)
 {
  
-  unsigned int num_neighbors = 0;
+  uint32_t num_neighbors = 0;
 
   for (int y = -(int)window; y < (int)window + 1 && num_neighbors <window; y++)
   {
@@ -697,7 +702,7 @@ bool AlgorithmAPI::checkWindowValid2(std::vector<LidarCloudPointData> &scan, siz
 int AlgorithmAPI::OutlierFilter(std::vector<LidarCloudPointData> &scan_in, const ShadowsFilterParam &param, std::vector<double> &tmp_ang ,PointFilterParam &pfp)
 {
 
-    for(unsigned int idx = 0;idx < scan_in.size();idx++){
+    for(uint32_t idx = 0;idx < scan_in.size();idx++){
     if(scan_in[idx].x > pfp.effective){//远距离不处理
         continue;
     }
@@ -717,7 +722,7 @@ int AlgorithmAPI::ShadowsFilter(std::vector<LidarCloudPointData> &scan_in, std::
 {
     // double angle_increment = 0;
     std::set<int> indices_to_delete;
-    for (unsigned int i = 0; i < scan_in.size() - param.window - 1; i++)
+    for (uint32_t i = 0; i < scan_in.size() - param.window - 1; i++)
     {
         double dis_i = sqrt((scan_in[i].x * scan_in[i].x) + (scan_in[i].y * scan_in[i].y) + (scan_in[i].z * scan_in[i].z));
         if ((dis_i > param.effective_distance) | (dis_i == 0))

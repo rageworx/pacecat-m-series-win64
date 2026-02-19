@@ -23,6 +23,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <sys/types.h>
+
 #ifndef _WIN32
     #include <sys/socket.h>
     #include <arpa/inet.h>
@@ -30,12 +31,14 @@
 #else
     #include <winsock2.h>
 #endif
+
 #include <math.h>
 #include <thread>
 #include <mutex>
 #include <queue>
-#include "../sdk/pacecatlidarsdk.h"
-#include "../sdk/global.h"
+
+#include <pacecatlidarsdk.h>
+#include <pacecatglobal.h>
 #define CUSTOM_WHELL
 
 #ifdef CUSTOM_WHELL

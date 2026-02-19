@@ -16,8 +16,9 @@
  * 2.use C++11 or later ; readerwriterqueue  3rdparty
  ****************************************************************/
 
-#include "../sdk/pacecatlidarsdk.h"
-#include "../sdk/global.h"
+#include <pacecatlidarsdk.h>
+#include <pacecatglobal.h>
+
 void LogDataCallback(uint32_t handle, const uint8_t dev_type, const char *data, int len)
 {
 	if (data == nullptr)

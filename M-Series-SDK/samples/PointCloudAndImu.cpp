@@ -17,8 +17,8 @@
  * 2.use C++11 or later ; readerwriterqueue  3rdparty
  ****************************************************************/
 
-#include "../sdk/pacecatlidarsdk.h"
-#include "../sdk/global.h"
+#include <pacecatlidarsdk.h>
+#include <pacecatglobal.h>
 #include <sstream>
 
 #include "../3rdparty/readerwriterqueue/readerwriterqueue.h"
